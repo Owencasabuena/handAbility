@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RehAbility | Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="auth-body">
+    <main class="auth-shell">
+        <a class="auth-brand" href="/">RehAbility</a>
+
+        <section class="auth-card" aria-label="Login">
+            <h1 class="auth-title">Welcome back</h1>
+            <p class="auth-subtitle">Log in to continue your exercises.</p>
+
+            {% if error %}
+            <div class="auth-alert" role="alert">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" class="auth-form">
+                <label class="field">
+                    <span class="field-label">Username</span>
+                    <input class="field-input" name="username" autocomplete="username" required>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Password</span>
+                    <input class="field-input" name="password" type="password" autocomplete="current-password" required>
+                </label>
+
+                <button class="btn btn-primary" type="submit">Log in</button>
+            </form>
+
+            <p class="auth-footer">
+                No account?
+                <a class="link" href="/register">Create one</a>
+            </p>
+        </section>
+    </main>
+</body>
+</html>

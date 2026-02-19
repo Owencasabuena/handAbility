@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RehAbility | Hand Exercise Tracker</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    
+    <!-- MediaPipe Hands Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/"><img src="/static/images/logo.png" alt="RehAbility" class="brand-logo"></a>
+            <div class="topbar-actions">
+                <span class="user-chip" id="user-display"></span>
+                <a class="btn btn-secondary btn-inline" href="/logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Medical Disclaimer -->
+    <div class="disclaimer">
+        ⚠️ <strong>Disclaimer:</strong> This is an educational tool, not a medical device. 
+        It does not diagnose conditions or replace professional therapy.
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <section id="view-home" class="view is-active" aria-label="Home">
+            <div class="hero">
+                <h1 class="hero-title">Welcome to RehAbility</h1>
+                <p class="hero-subtitle">Choose an exercise to begin, or review your progress.</p>
+            </div>
+
+            <div class="cards">
+                <button class="card exercise-card" type="button" data-exercise="open_close">
+                    <div class="card-icon" aria-hidden="true"><img src="/static/images/open_close_icon.gif" alt="Open-Close Hand" width="32" height="32"></div>
+                    <div class="card-body">
+                        <div class="card-title">Open–Close Hand</div>
+                        <div class="card-desc">Open fully then close into a fist. We’ll count reps for you.</div>
+                    </div>
+                    <div class="card-cta">Start</div>
+                </button>
+
+                <button class="card exercise-card" type="button" data-exercise="pinch">
+                    <div class="card-icon" aria-hidden="true"><img src="/static/images/pinch_icon.gif" alt="Index-Thumb Pinch" width="32" height="32"></div>
+                    <div class="card-body">
+                        <div class="card-title">Index–Thumb Pinch</div>
+                        <div class="card-desc">Touch thumb to index finger then separate. Great for dexterity.</div>
+                    </div>
+                    <div class="card-cta">Start</div>
+                </button>
+
+                <button class="card exercise-card" type="button" data-exercise="abduction_adduction">
+                    <div class="card-icon" aria-hidden="true"><img src="/static/images/abduction_adduction_icon.gif" alt="Abduction & Adduction" width="32" height="32"></div>
+                    <div class="card-body">
+                        <div class="card-title">Abduction & Adduction</div>
+                        <div class="card-desc">Spread fingers wide, then bring them back together touching.</div>
+                    </div>
+                    <div class="card-cta">Start</div>
+                </button>
+
+                <button class="card exercise-card" type="button" data-exercise="thumb_opposition">
+                    <div class="card-icon" aria-hidden="true"><img src="/static/images/thumb_opposition_icon.gif" alt="Thumb Opposition Progression" width="32" height="32"></div>
+                    <div class="card-body">
+                        <div class="card-title">Thumb Opposition</div>
+                        <div class="card-desc">Touch thumb to each fingertip in sequence for dexterity.</div>
+                    </div>
+                    <div class="card-cta">Start</div>
+                </button>
+
+                <button class="card exercise-card" type="button" data-exercise="finger_lifts">
+                    <div class="card-icon" aria-hidden="true"><img src="/static/images/finger_lifts_icon.gif" alt="Individual Finger Flexion–Extension" width="32" height="32"></div>
+                    <div class="card-body">
+                        <div class="card-title">Finger Lifts</div>
+                        <div class="card-desc">Lift each finger individually to build fine motor control.</div>
+                    </div>
+                    <div class="card-cta">Start</div>
+                </button>
+
+                <button class="card progress-card" id="go-progress" type="button">
+                    <div class="card-icon" aria-hidden="true"><img src="/static/images/progress_icon.gif" alt="See Progress" width="32" height="32"></div>
+                    <div class="card-body">
+                        <div class="card-title">See Progress</div>
+                        <div class="card-desc">Review your saved sessions and notes.</div>
+                    </div>
+                    <div class="card-cta">Open</div>
+                </button>
+            </div>
+        </section>
+
+        <section id="view-setup" class="view" aria-label="Exercise Setup">
+            <div class="page-header">
+                <button class="btn btn-ghost btn-inline" id="setup-back" type="button">Back</button>
+                <div class="page-header-text">
+                    <h2 class="page-title" id="setup-title">Exercise Setup</h2>
+                    <p class="page-subtitle" id="setup-subtitle">Set your goal for today.</p>
+                </div>
+            </div>
+
+            <div class="setup-card">
+                <div class="setup-preview" id="setup-preview"></div>
+                <form class="setup-form" id="setup-form">
+                    <label class="field">
+                        <span class="field-label">Sets</span>
+                        <input class="field-input" id="sets-input" type="number" min="1" max="10" value="3" required>
+                    </label>
+
+                    <label class="field">
+                        <span class="field-label">Reps per set</span>
+                        <input class="field-input" id="reps-input" type="number" min="1" max="50" value="10" required>
+                    </label>
+
+                    <button class="btn btn-primary" id="begin-btn" type="submit">Start session</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="view-exercise" class="view" aria-label="Exercise">
+            <div class="page-header">
+                <button class="btn btn-ghost btn-inline" id="exercise-back" type="button">Back</button>
+                <div class="page-header-text">
+                    <h2 class="page-title" id="exercise-title">Exercise</h2>
+                    <p class="page-subtitle" id="exercise-subtitle"></p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="btn btn-secondary btn-inline" id="go-progress-inline" type="button">Progress</button>
+                </div>
+            </div>
+
+            <div class="exercise-layout">
+                <!-- Controls Section -->
+                <div class="controls-panel">
+                    <h2>Session</h2>
+
+                    <div class="session-grid">
+                        <div class="metric">
+                            <div class="metric-label">Set</div>
+                            <div class="metric-value" id="set-count">1 / 3</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Reps</div>
+                            <div class="metric-value"><span id="rep-count-inline">0</span> / <span id="rep-target">10</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise Selection -->
+                    <div class="control-group hidden">
+                        <label for="exercise-select">Select Exercise:</label>
+                        <select id="exercise-select" disabled>
+                            <option value="open_close">Hand Open/Close</option>
+                            <option value="pinch">Thumb-Index Pinch</option>
+                        </select>
+                    </div>
+
+                    <!-- Audio Toggle -->
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="audio-toggle" checked>
+                            Enable Audio Feedback
+                        </label>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="reset-btn" class="btn btn-secondary" type="button">Restart Set</button>
+
+                    <!-- Repetition Counter -->
+                    <div class="rep-counter">
+                        <div class="rep-label">Repetitions</div>
+                        <div class="rep-number" id="rep-count">0</div>
+                    </div>
+
+                    <!-- Current State Display -->
+                    <div class="state-display">
+                        <div class="state-label">Current State</div>
+                        <div class="state-value" id="current-state">Ready</div>
+                    </div>
+
+                    <div class="motivation" id="motivation" aria-live="polite"></div>
+
+                    <button id="save-progress-btn" class="btn btn-primary btn-outline" type="button">Save Progress</button>
+
+                    <button id="next-set-btn" class="btn btn-primary hidden" type="button">Next Set</button>
+                </div>
+
+                <!-- Video Section -->
+                <div class="video-panel">
+                    <h2>Camera Feed</h2>
+                    
+                    <!-- Video Element (hidden, used for processing) -->
+                    <video id="video" autoplay playsinline style="display: none;"></video>
+                    
+                    <!-- Canvas for drawing hand landmarks -->
+                    <canvas id="canvas"></canvas>
+                    
+                    <!-- Feedback Display -->
+                    <div class="feedback-box" id="feedback">
+                        <p>Position your hand in front of the camera...</p>
+                    </div>
+
+                    <!-- Start Button -->
+                    <button id="start-btn" class="btn btn-primary" type="button">Start Camera</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-progress" class="view" aria-label="Progress">
+            <div class="page-header">
+                <button class="btn btn-ghost btn-inline" id="progress-back" type="button">Back</button>
+                <div class="page-header-text">
+                    <h2 class="page-title">Progress</h2>
+                    <p class="page-subtitle">Your recent saved sessions.</p>
+                </div>
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress-summary" id="progress-summary"></div>
+                <div class="progress-list" id="progress-list"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Instructions Section -->
+    <div class="instructions" id="exercise-instructions">
+        <h2 id="instructions-title">Instructions</h2>
+        <div class="instruction-grid">
+            <div class="instruction-steps">
+                <ol id="instructions-steps"></ol>
+                
+                <h3>Tips for Best Results</h3>
+                <ul id="instructions-tips">
+                    <li>Use good lighting - face a light source</li>
+                    <li>Keep your hand clearly visible in the frame</li>
+                    <li>Move slowly and deliberately for accurate counting</li>
+                    <li>Stop if you feel pain and consult your therapist</li>
+                </ul>
+            </div>
+
+            <div class="instruction-images" id="instructions-images"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="progress-modal" aria-hidden="true">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
+            <h2 class="modal-title" id="progress-modal-title">Save progress</h2>
+
+            <form class="modal-form" id="progress-form">
+                <div class="modal-grid">
+                    <label class="field">
+                        <span class="field-label">Sets planned</span>
+                        <input class="field-input" id="modal-sets-planned" type="number" min="1" max="10" required>
+                    </label>
+
+                    <label class="field">
+                        <span class="field-label">Reps planned (per set)</span>
+                        <input class="field-input" id="modal-reps-planned" type="number" min="1" max="50" required>
+                    </label>
+                </div>
+
+                <label class="field">
+                    <span class="field-label">Reps completed</span>
+                    <input class="field-input" id="modal-reps-completed" type="number" min="0" required>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Notes</span>
+                    <textarea class="field-input field-textarea" id="modal-notes" rows="4" placeholder="How did it feel today? Any pain, stiffness, or improvements?"></textarea>
+                </label>
+
+                <div class="modal-actions">
+                    <button class="btn btn-secondary btn-inline" id="modal-cancel" type="button">Cancel</button>
+                    <button class="btn btn-primary btn-inline" type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>RehAbility | Educational Project | Not for Medical Use</p>
+    </footer>
+
+    <!-- Load our JavaScript -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
