@@ -413,10 +413,12 @@ if __name__ == '__main__':
     print("Press Ctrl+C to stop the server")
     print("=" * 50)
     
-    # Run the Flask development server
+    # Run the Flask server
     init_db()
+    port = int(os.environ.get('PORT', '5000'))
+    debug = os.environ.get('FLASK_DEBUG', '0') == '1'
     app.run(
-        debug=True,  # Shows detailed error messages
-        host='127.0.0.1',  # Only accessible from your computer
-        port=5000  # Port number
+        debug=debug,
+        host='0.0.0.0',
+        port=port,
     )
