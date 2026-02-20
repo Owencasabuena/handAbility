@@ -45,6 +45,8 @@ thumb_opposition_detector = ThumbOppositionDetector()
 finger_lifts_detector = FingerLiftsDetector()
 state_manager = StateManager()
 
+# Initialize database on startup
+init_db()
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -411,7 +413,6 @@ if __name__ == '__main__':
     print("=" * 50)
     
     # Run the Flask server
-    init_db()
     port = int(os.environ.get('PORT', '5000'))
     debug = os.environ.get('FLASK_DEBUG', '0') == '1'
     app.run(
