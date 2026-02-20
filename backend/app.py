@@ -45,9 +45,6 @@ thumb_opposition_detector = ThumbOppositionDetector()
 finger_lifts_detector = FingerLiftsDetector()
 state_manager = StateManager()
 
-# Initialize database on startup
-init_db()
-
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -83,6 +80,9 @@ def init_db():
         print(f"Database error: {e}")
     finally:
         conn.close()
+
+# Initialize database on startup
+init_db()
 
 class User(UserMixin):
     def __init__(self, user_id, username, password_hash):
