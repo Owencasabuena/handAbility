@@ -11,12 +11,12 @@ from flask import Flask, request, jsonify, redirect, url_for, render_template, s
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from exercises.open_close import HandOpenCloseDetector
-from exercises.pinch import PinchDetector
-from exercises.abduction_adduction import AbductionAdductionDetector
-from exercises.thumb_opposition import ThumbOppositionDetector
-from exercises.finger_lifts import FingerLiftsDetector
-from state_manager import StateManager
+from .exercises.open_close import HandOpenCloseDetector
+from .exercises.pinch import PinchDetector
+from .exercises.abduction_adduction import AbductionAdductionDetector
+from .exercises.thumb_opposition import ThumbOppositionDetector
+from .exercises.finger_lifts import FingerLiftsDetector
+from .state_manager import StateManager
 
 # Create Flask app
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
