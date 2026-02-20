@@ -55,18 +55,15 @@ def get_db():
 def init_db():
     conn = get_db()
     try:
-        conn.execute(
-            """
+        # Create tables if they don't exist
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                created_at TEXT NOT NULL
+                password_hash TEXT NOT NULL
             )
-            """
-        )
-        conn.execute(
-            """
+        """)
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS progress (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -78,12 +75,12 @@ def init_db():
                 created_at TEXT NOT NULL,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
-            """
-        )
+        """)
         conn.commit()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
     finally:
         conn.close()
-
 
 class User(UserMixin):
     def __init__(self, user_id, username, password_hash):
